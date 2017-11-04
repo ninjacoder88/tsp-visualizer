@@ -54,6 +54,8 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Graph\GraphBuilder.cs" />
+    <Compile Include="Graph\GraphBuilderException.cs" />
     <Compile Include="Models\Edge.cs" />
     <Compile Include="Models\Graph.cs" />
     <Compile Include="Models\Node.cs" />

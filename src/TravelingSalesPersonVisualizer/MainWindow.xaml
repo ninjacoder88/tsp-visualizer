@@ -11,16 +11,28 @@
             <ColumnDefinition Width="Auto"></ColumnDefinition>
             <ColumnDefinition></ColumnDefinition>
         </Grid.ColumnDefinitions>
-        <StackPanel Grid.Column="0" Background="Beige">
+        <StackPanel Grid.Column="0" Background="Beige" >
+            <Grid>
+                <TextBlock>Nodes</TextBlock>
+                <TextBox HorizontalAlignment="Right" Width="40" x:Name="TextBoxNodeCount"></TextBox>
+            </Grid>
+            <Grid>
+                <TextBlock>Edges</TextBlock>
+                <TextBox HorizontalAlignment="Right" Width="40" x:Name="TextBoxEdgeCount"></TextBox>
+            </Grid>
             <Button x:Name="ButtonGenerateGraph">Generate Graph</Button>
+            <Separator></Separator>
             <Button x:Name="ButtonSolve">Solve</Button>
         </StackPanel>
         <Grid Grid.Column="1">
             <Grid.RowDefinitions>
-                <RowDefinition></RowDefinition>
-                <RowDefinition></RowDefinition>
+                <RowDefinition Height="5*"></RowDefinition>
+                <RowDefinition Height="*"></RowDefinition>
             </Grid.RowDefinitions>
-            <Canvas Grid.Row="0" x:Name="MaintCanvas"></Canvas>
+            <Canvas Grid.Row="0" x:Name="MainCanvas" Background="BlanchedAlmond"></Canvas>
+            <StackPanel Grid.Row="1" Background="Beige">
+                <TextBlock> Step 1</TextBlock>
+            </StackPanel>
         </Grid>
     </Grid>
 </Window>
