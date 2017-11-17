@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using TravelingSalesPersonVisualizer.AppEventArgs;
@@ -13,9 +14,12 @@ namespace TravelingSalesPersonVisualizer
 
         public ViewModel()
         {
+            Logs = new ObservableCollection<EventLogModel>();
         }
 
         public GraphModel Graph { get; private set; }
+
+        public ObservableCollection<EventLogModel> Logs { get; }
 
         public int RequestedEdgeCount
         {
@@ -48,7 +52,9 @@ namespace TravelingSalesPersonVisualizer
             //able to revisit edges
             //best solution (distance, nodes)
 
-            List<SolutionModel> solutionModels = new List<SolutionModel>();
+            Logs.Clear();
+
+            var solutionModels = new List<SolutionModel>();
 
             int solutionsAttempted = 0;
             while (true)
@@ -57,6 +63,8 @@ namespace TravelingSalesPersonVisualizer
                 {
                     return solutionModels;
                 }
+
+                Log($"Starting Attempt {solutionsAttempted + 1}");
 
                 SolutionModel solution = new SolutionModel();
                 solutionModels.Add(solution);
@@ -82,7 +90,6 @@ namespace TravelingSalesPersonVisualizer
 
                 if (discoveredNodes != Graph.NodeCount)
                 {
-                    //"Trying again".Dump();
                     solution.Solved = false;
                     solutionsAttempted++;
                     continue;
@@ -100,40 +107,48 @@ namespace TravelingSalesPersonVisualizer
 
         private (NodeModel node, EdgeModel edge) Go(SolutionModel solutionModel, NodeModel currentNode)
         {
-            //currentNode.Name.Dump();
+            Log($"Considering {currentNode.Name}");
 
             NodeModel closetNode = null;
             EdgeModel traversedEdge = null;
-            double minDistance = double.MaxValue;
+            double minWeightedDistance = double.MaxValue;
             foreach (var edge in currentNode.Edges)
             {
-                //$"Considering {edge.Name}".Dump();
+                Log($"Considering {edge.Name}");
 
                 NodeModel otherNode = edge.Start == currentNode ? edge.End : edge.Start;
                 if (solutionModel.Nodes.Contains(otherNode))
                 {
-                    //"Node already visited".Dump();
+                    Log($"Node {otherNode.Name} already visited");
                     continue;
                 }
 
                 if (solutionModel.Edges.Contains(edge))
                 {
-                    //"Edge already traversed".Dump();
+                    Log($"Edge {edge.Name} already traversed");
                     continue;
                 }
 
-                //double distance = Math.Sqrt(Math.Pow(edge.End.X - edge.Start.X, 2) + Math.Pow(edge.End.Y - edge.Start.Y, 2));
-                double distance = (Math.Sqrt(Math.Pow(edge.End.X - edge.Start.X, 2) + Math.Pow(edge.End.Y - edge.Start.Y, 2))) * edge.Weight;
-                if (distance < minDistance)
+                double distance = Math.Sqrt(Math.Pow(edge.End.X - edge.Start.X, 2) + Math.Pow(edge.End.Y - edge.Start.Y, 2));
+                double weightedDistance = distance * edge.Weight;
+
+                Log($"{distance} * {edge.Weight} = {weightedDistance}");
+
+                if (weightedDistance < minWeightedDistance)
                 {
-                    minDistance = distance;
+                    Log($"New minimum = Node: {otherNode.Name} Edge: {edge.Name}");
+                    minWeightedDistance = weightedDistance;
                     closetNode = otherNode;
                     traversedEdge = edge;
                 }
             }
-            //var output = closetNode == null ? "End" : $"Chose {closetNode.Name} Traversed {traversedEdge.Name}";
-            //output.Dump();
+
             return (closetNode, traversedEdge);
+        }
+
+        private void Log(string text)
+        {
+            Logs.Add(new EventLogModel(text));
         }
 
         private int _requestedEdgeCount;

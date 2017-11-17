@@ -23,6 +23,8 @@ namespace TravelingSalesPersonVisualizer
 
             _viewModel = new ViewModel();
 
+            EventLogGrid.ItemsSource = _viewModel.Logs;
+
             BindingOperations.SetBinding(TextBoxNodeCount, TextBox.TextProperty,
                                          new Binding
                                              {
@@ -50,7 +52,7 @@ namespace TravelingSalesPersonVisualizer
 
         private Ellipse AddNode(int x, int y, Brush brush)
         {
-            Ellipse ellipse = new Ellipse {Width = 15, Height = 15, Fill = brush};
+            Ellipse ellipse = new Ellipse {Width = 20, Height = 20, Fill = brush};
 
             Canvas.SetLeft(ellipse, x);
             Canvas.SetTop(ellipse, y);
@@ -69,11 +71,7 @@ namespace TravelingSalesPersonVisualizer
             Brush nodeBrush = (SolidColorBrush) new BrushConverter().ConvertFrom("#507EA5");
             Brush edgeBrush = (SolidColorBrush) new BrushConverter().ConvertFrom("#B9BCBF");
 
-            foreach (var graphNode in _viewModel.Graph.Nodes)
-            {
-                var ellipse = AddNode(graphNode.X, graphNode.Y, nodeBrush);
-                NodeEllipse.Add(graphNode, ellipse);
-            }
+            SolidColorBrush brush = new SolidColorBrush(Color.FromRgb(255, 255, 255));
 
             foreach (var graphEdge in _viewModel.Graph.Edges)
             {
@@ -88,6 +86,20 @@ namespace TravelingSalesPersonVisualizer
                                };
                 EdgeLine.Add(graphEdge, line);
                 MainCanvas.Children.Add(line);
+            }
+
+            foreach (var graphNode in _viewModel.Graph.Nodes)
+            {
+                var ellipse = AddNode(graphNode.X, graphNode.Y, nodeBrush);
+                NodeEllipse.Add(graphNode, ellipse);
+
+                TextBlock textBlock = new TextBlock();
+                textBlock.Text = graphNode.Name;
+                textBlock.Foreground = brush;
+                textBlock.FontSize = 15;
+                Canvas.SetLeft(textBlock, graphNode.X + 5);
+                Canvas.SetTop(textBlock, graphNode.Y - 2.5 );
+                MainCanvas.Children.Add(textBlock);
             }
         }
 
