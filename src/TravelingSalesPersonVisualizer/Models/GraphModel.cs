@@ -3,20 +3,20 @@ using System.Collections.ObjectModel;
 
 namespace TravelingSalesPersonVisualizer.Models
 {
-    public class Graph
+    public class GraphModel
     {
-        public Graph()
+        public GraphModel()
         {
-            Nodes = new List<Node>();
-            Edges = new List<Edge>();
+            Nodes = new List<NodeModel>();
+            Edges = new List<EdgeModel>();
         }
 
         public int NodeCount => Nodes.Count;
 
         public int EdgeCount => Edges.Count;
 
-        public List<Node> Nodes { get; }
+        public List<NodeModel> Nodes { get; }
 
-        public List<Edge> Edges { get; }
+        public List<EdgeModel> Edges { get; }
     }
 }

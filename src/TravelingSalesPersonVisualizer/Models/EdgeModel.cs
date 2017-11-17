@@ -1,8 +1,8 @@
 ﻿namespace TravelingSalesPersonVisualizer.Models
 {
-    public class Edge
+    public class EdgeModel
     {
-        public Edge(Node start, Node end, int weight)
+        public EdgeModel(NodeModel start, NodeModel end, int weight)
         {
             Start = start;
             End = end;
@@ -10,11 +10,11 @@
             Name = $"{start.Name} - {end.Name}";
         }
 
-        public Node End { get; }
+        public NodeModel End { get; }
 
         public string Name { get; }
 
-        public Node Start { get; }
+        public NodeModel Start { get; }
 
         public int Weight { get; }
     }
