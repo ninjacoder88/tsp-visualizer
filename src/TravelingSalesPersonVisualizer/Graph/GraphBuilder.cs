@@ -7,14 +7,14 @@ namespace TravelingSalesPersonVisualizer
 {
     public class GraphBuilder
     {
-        public Graph BuildGraph(int requestedNodeCount, int requestedEdgeCount, int maxX, int maxY)
+        public GraphModel BuildGraph(int requestedNodeCount, int requestedEdgeCount, int maxX, int maxY)
         {
             if (requestedEdgeCount > (requestedNodeCount * (requestedNodeCount - 1)) / 2)
             {
                 throw new GraphBuilderException("The number of requested edges exceeds the maximum number of allowed edges based on the number of nodes");
             }
 
-            Graph graph = new Graph();
+            GraphModel graphModel = new GraphModel();
 
             Random random = new Random();
 
@@ -22,7 +22,7 @@ namespace TravelingSalesPersonVisualizer
             {
                 int x = random.Next(10, maxX-10);
                 int y = random.Next(10, maxY-10);
-                graph.Nodes.Add(new Node(x, y, i.ToString()));
+                graphModel.Nodes.Add(new NodeModel(x, y, i.ToString()));
             }
 
             int edgeCount = 0;
@@ -32,28 +32,28 @@ namespace TravelingSalesPersonVisualizer
 
                 int n1 = nodeIds[random.Next(0, nodeIds.Count)];
                 nodeIds.Remove(n1);
-                Node startNode = graph.Nodes[n1];
+                NodeModel startNode = graphModel.Nodes[n1];
 
                 if (startNode.Edges.Count == requestedNodeCount - 1)
                 {
                     continue;
                 }
 
-                Node endNode = null;
+                NodeModel endNode = null;
 
                 while (true)
                 {
                     int n2 = nodeIds[random.Next(0, nodeIds.Count)];
                     nodeIds.Remove(n2);
 
-                    endNode = graph.Nodes[n2];
+                    endNode = graphModel.Nodes[n2];
 
-                    if (graph.Edges.Any(x => x.Start == startNode && x.End == endNode))
+                    if (graphModel.Edges.Any(x => x.Start == startNode && x.End == endNode))
                     {
                         //regenerate n2
                         continue;
                     }
-                    if (graph.Edges.Any(x => x.Start == endNode && x.End == startNode))
+                    if (graphModel.Edges.Any(x => x.Start == endNode && x.End == startNode))
                     {
                         //regeneate n2
                         continue;
@@ -62,14 +62,14 @@ namespace TravelingSalesPersonVisualizer
                 }
 
                 int edgeWeight = random.Next(1, 5);
-                var edge = new Edge(startNode, endNode, edgeWeight);
-                graph.Edges.Add(edge);
+                var edge = new EdgeModel(startNode, endNode, edgeWeight);
+                graphModel.Edges.Add(edge);
                 startNode.Edges.Add(edge);
                 endNode.Edges.Add(edge);
                 edgeCount++;
             }
 
-            return graph;
+            return graphModel;
         }
     }
 }
