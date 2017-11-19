@@ -62,11 +62,14 @@
     <Compile Include="AppEventArgs\NodeUpdatedEventArgs.cs" />
     <Compile Include="Graph\GraphBuilder.cs" />
     <Compile Include="Graph\GraphBuilderException.cs" />
+    <Compile Include="Graph\RandomSingleEdgeBetweenNodeGraphBuilder.cs" />
+    <Compile Include="Graph\UploadGraphBuilder.cs" />
     <Compile Include="Models\EdgeModel.cs" />
     <Compile Include="Models\EventLogModel.cs" />
     <Compile Include="Models\GraphModel.cs" />
     <Compile Include="Models\NodeModel.cs" />
     <Compile Include="Models\SolutionModel.cs" />
+    <Compile Include="Utilities\BindingHelper.cs" />
     <Compile Include="ViewModel.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -108,5 +111,6 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

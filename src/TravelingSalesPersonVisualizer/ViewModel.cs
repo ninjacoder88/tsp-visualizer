@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Linq;
 using System.Runtime.CompilerServices;
-using TravelingSalesPersonVisualizer.AppEventArgs;
 using TravelingSalesPersonVisualizer.Models;
 
 namespace TravelingSalesPersonVisualizer
@@ -17,9 +17,29 @@ namespace TravelingSalesPersonVisualizer
             Logs = new ObservableCollection<EventLogModel>();
         }
 
+        public string EdgeFilePath
+        {
+            get => _edgeFilePath;
+            set
+            {
+                _edgeFilePath = value;
+                OnPropertyChanged();
+            }
+        }
+
         public GraphModel Graph { get; private set; }
 
         public ObservableCollection<EventLogModel> Logs { get; }
+
+        public string NodeFilePath
+        {
+            get => _nodeFilePath;
+            set
+            {
+                _nodeFilePath = value;
+                OnPropertyChanged();
+            }
+        }
 
         public int RequestedEdgeCount
         {
@@ -41,9 +61,14 @@ namespace TravelingSalesPersonVisualizer
             }
         }
 
-        public void GenerateGraph(int maxX, int maxY)
+        public void GenerateRandomGraph(int maxX, int maxY)
         {
-            Graph = new GraphBuilder().BuildGraph(RequestedNodeCount, RequestedEdgeCount, maxX, maxY);
+            Graph = new RandomSingleEdgeBetweenNodeGraphBuilder().BuildGraph(RequestedNodeCount, RequestedEdgeCount, maxX, maxY);
+        }
+
+        public void GenerateUploadedGraph()
+        {
+            Graph = new UploadGraphBuilder(NodeFilePath, EdgeFilePath).BuildGraph();
         }
 
         public IEnumerable<SolutionModel> SolveGrapsh()
@@ -64,7 +89,7 @@ namespace TravelingSalesPersonVisualizer
                     return solutionModels;
                 }
 
-                Log($"Starting Attempt {solutionsAttempted + 1}");
+                Log($"STARTING ATTEMPT {solutionsAttempted + 1}");
 
                 SolutionModel solution = new SolutionModel();
                 solutionModels.Add(solution);
@@ -100,9 +125,34 @@ namespace TravelingSalesPersonVisualizer
             return solutionModels;
         }
 
+        public void TrySolve()
+        {
+            foreach (var graphNode in Graph.Nodes)
+            {
+                SolutionModel solutionModel = new SolutionModel();
+
+                Log($"Starting at Node: {graphNode.Name}");
+
+                var allNodes = Graph.Nodes.ToList();
+                allNodes.Remove(graphNode);
+
+                var currentNode = graphNode;
+                solutionModel.Nodes.Add(currentNode);
+
+                FindNeighbors(currentNode);
+            }
+        }
+
         protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        private void FindNeighbors(NodeModel currentNode)
+        {
+            foreach (var currentNodeEdge in currentNode.Edges)
+            {
+            }
         }
 
         private (NodeModel node, EdgeModel edge) Go(SolutionModel solutionModel, NodeModel currentNode)
@@ -132,7 +182,7 @@ namespace TravelingSalesPersonVisualizer
                 double distance = Math.Sqrt(Math.Pow(edge.End.X - edge.Start.X, 2) + Math.Pow(edge.End.Y - edge.Start.Y, 2));
                 double weightedDistance = distance * edge.Weight;
 
-                Log($"{distance} * {edge.Weight} = {weightedDistance}");
+                Log($"{distance.ToString("F2")} * {edge.Weight} = {weightedDistance.ToString("F2")}");
 
                 if (weightedDistance < minWeightedDistance)
                 {
@@ -151,6 +201,8 @@ namespace TravelingSalesPersonVisualizer
             Logs.Add(new EventLogModel(text));
         }
 
+        private string _edgeFilePath;
+        private string _nodeFilePath;
         private int _requestedEdgeCount;
         private int _requestedNodeCount;
     }

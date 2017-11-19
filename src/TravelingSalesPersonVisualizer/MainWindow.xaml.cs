@@ -6,6 +6,7 @@ using System.Windows.Data;
 using System.Windows.Media;
 using System.Windows.Shapes;
 using TravelingSalesPersonVisualizer.Models;
+using TravelingSalesPersonVisualizer.Utilities;
 
 namespace TravelingSalesPersonVisualizer
 {
@@ -19,31 +20,27 @@ namespace TravelingSalesPersonVisualizer
             InitializeComponent();
 
             ButtonGenerateGraph.Click += ButtonGenerateGraph_Click;
+            ButtonUploadGraph.Click += ButtonUploadGraph_Click;
             ButtonSolve.Click += ButtonSolve_Click;
 
+            //IGraphBuilder graphBuilder = new UploadGraphBuilder(@"C:\temp\nodes.csv", @"C:\temp\edges.csv");
+            //IGraphBuilder graphBuilder = new RandomSingleEdgeBetweenNodeGraphBuilder();
             _viewModel = new ViewModel();
 
             EventLogGrid.ItemsSource = _viewModel.Logs;
 
-            BindingOperations.SetBinding(TextBoxNodeCount, TextBox.TextProperty,
-                                         new Binding
-                                             {
-                                                 Source = _viewModel,
-                                                 Path = new PropertyPath(nameof(_viewModel.RequestedNodeCount)),
-                                                 Mode = BindingMode.TwoWay,
-                                                 UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
-                                             });
-            BindingOperations.SetBinding(TextBoxEdgeCount, TextBox.TextProperty,
-                                         new Binding
-                                             {
-                                                 Source = _viewModel,
-                                                 Path = new PropertyPath(nameof(_viewModel.RequestedEdgeCount)),
-                                                 Mode = BindingMode.TwoWay,
-                                                 UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
-                                             });
+            BindingHelper.BindTextBox(TextBoxNodeCount, _viewModel, nameof(_viewModel.RequestedNodeCount));
+            BindingHelper.BindTextBox(TextBoxEdgeCount, _viewModel, nameof(_viewModel.RequestedEdgeCount));
+            BindingHelper.BindTextBox(TextBoxNodeFilePath, _viewModel, nameof(_viewModel.NodeFilePath));
+            BindingHelper.BindTextBox(TextBoxEdgeFilePath, _viewModel, nameof(_viewModel.EdgeFilePath));
 
             NodeEllipse = new Dictionary<NodeModel, Ellipse>();
             EdgeLine = new Dictionary<EdgeModel, Line>();
+        }
+
+        private void ButtonUploadGraph_Click(object sender, RoutedEventArgs e)
+        {
+            _viewModel.GenerateUploadedGraph();
         }
 
         private Dictionary<EdgeModel, Line> EdgeLine { get; }
@@ -66,7 +63,7 @@ namespace TravelingSalesPersonVisualizer
             NodeEllipse.Clear();
             EdgeLine.Clear();
 
-            _viewModel.GenerateGraph((int) MainCanvas.ActualWidth, (int) MainCanvas.ActualHeight);
+            _viewModel.GenerateRandomGraph((int) MainCanvas.ActualWidth, (int) MainCanvas.ActualHeight);
 
             Brush nodeBrush = (SolidColorBrush) new BrushConverter().ConvertFrom("#507EA5");
             Brush edgeBrush = (SolidColorBrush) new BrushConverter().ConvertFrom("#B9BCBF");
@@ -97,6 +94,7 @@ namespace TravelingSalesPersonVisualizer
                 textBlock.Text = graphNode.Name;
                 textBlock.Foreground = brush;
                 textBlock.FontSize = 15;
+                textBlock.ToolTip = graphNode.Name;
                 Canvas.SetLeft(textBlock, graphNode.X + 5);
                 Canvas.SetTop(textBlock, graphNode.Y - 2.5 );
                 MainCanvas.Children.Add(textBlock);

@@ -12,20 +12,36 @@
             <ColumnDefinition></ColumnDefinition>
         </Grid.ColumnDefinitions>
         <StackPanel Grid.Column="0" Background="#FFFDF5" >
-            <Grid>
-                <TextBlock>Nodes</TextBlock>
-                <TextBox HorizontalAlignment="Right" Width="40" x:Name="TextBoxNodeCount"></TextBox>
-            </Grid>
-            <Grid>
-                <TextBlock>Edges</TextBlock>
-                <TextBox HorizontalAlignment="Right" Width="40" x:Name="TextBoxEdgeCount"></TextBox>
-            </Grid>
-            <Button x:Name="ButtonGenerateGraph">Generate Graph</Button>
-            <Separator></Separator>
-            <CheckBox IsEnabled="False">Revisit Nodes</CheckBox>
-            <CheckBox IsEnabled="False">Revisit Edges</CheckBox>
-            <CheckBox IsEnabled="False">Display Best Solution</CheckBox>
-            <Button x:Name="ButtonSolve">Solve</Button>
+            <GroupBox Header="Generate Random">
+                <StackPanel>
+                    <Grid>
+                        <TextBlock>Nodes</TextBlock>
+                        <TextBox HorizontalAlignment="Right" Width="40" x:Name="TextBoxNodeCount"></TextBox>
+                    </Grid>
+                    <Grid>
+                        <TextBlock>Edges</TextBlock>
+                        <TextBox HorizontalAlignment="Right" Width="40" x:Name="TextBoxEdgeCount"></TextBox>
+                    </Grid>
+                    <Button x:Name="ButtonGenerateGraph">Generate Graph</Button>
+                </StackPanel>
+            </GroupBox>
+            <GroupBox Header="Upload Existing">
+                <StackPanel>
+                    <TextBlock>Node File Path</TextBlock>
+                    <TextBox x:Name="TextBoxNodeFilePath"></TextBox>
+                    <TextBlock>Edge File Path</TextBlock>
+                    <TextBox x:Name="TextBoxEdgeFilePath"></TextBox>
+                    <Button x:Name="ButtonUploadGraph">Generate Graph</Button>
+                </StackPanel>
+            </GroupBox>
+            <GroupBox Header="Solve">
+                <StackPanel>
+                    <CheckBox IsEnabled="False">Revisit Nodes</CheckBox>
+                    <CheckBox IsEnabled="False">Revisit Edges</CheckBox>
+                    <CheckBox IsEnabled="False">Display Best Solution</CheckBox>
+                    <Button x:Name="ButtonSolve">Solve</Button>
+                </StackPanel>
+            </GroupBox>
         </StackPanel>
         <Grid Grid.Column="1">
             <Grid.RowDefinitions>
@@ -34,9 +50,6 @@
             </Grid.RowDefinitions>
             <Canvas Grid.Row="0" x:Name="MainCanvas" Background="#FFF8F5"></Canvas>
             <DataGrid Grid.Row="1" x:Name="EventLogGrid"></DataGrid>
-            <!--<StackPanel Grid.Row="1" Background="Beige">
-                <TextBlock> Step 1</TextBlock>
-            </StackPanel>-->
         </Grid>
     </Grid>
 </Window>
