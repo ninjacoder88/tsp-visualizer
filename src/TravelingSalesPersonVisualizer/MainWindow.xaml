@@ -42,6 +42,9 @@
                     <Button x:Name="ButtonSolve">Solve</Button>
                 </StackPanel>
             </GroupBox>
+            <StackPanel>
+                <Slider x:Name="SliderSolution"></Slider>
+            </StackPanel>
         </StackPanel>
         <Grid Grid.Column="1">
             <Grid.RowDefinitions>

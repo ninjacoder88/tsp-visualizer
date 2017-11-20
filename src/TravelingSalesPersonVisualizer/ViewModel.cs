@@ -15,6 +15,7 @@ namespace TravelingSalesPersonVisualizer
         public ViewModel()
         {
             Logs = new ObservableCollection<EventLogModel>();
+            Solutions = new ObservableCollection<SolutionModel>();
         }
 
         public string EdgeFilePath
@@ -61,6 +62,8 @@ namespace TravelingSalesPersonVisualizer
             }
         }
 
+        public ObservableCollection<SolutionModel> Solutions { get; }
+
         public void GenerateRandomGraph(int maxX, int maxY)
         {
             Graph = new RandomSingleEdgeBetweenNodeGraphBuilder().BuildGraph(RequestedNodeCount, RequestedEdgeCount, maxX, maxY);
@@ -71,75 +74,26 @@ namespace TravelingSalesPersonVisualizer
             Graph = new UploadGraphBuilder(NodeFilePath, EdgeFilePath).BuildGraph();
         }
 
-        public IEnumerable<SolutionModel> SolveGrapsh()
+        private void Clear()
         {
-            //able to revisit nodes
-            //able to revisit edges
-            //best solution (distance, nodes)
-
             Logs.Clear();
-
-            var solutionModels = new List<SolutionModel>();
-
-            int solutionsAttempted = 0;
-            while (true)
-            {
-                if (solutionsAttempted == Graph.NodeCount)
-                {
-                    return solutionModels;
-                }
-
-                Log($"STARTING ATTEMPT {solutionsAttempted + 1}");
-
-                SolutionModel solution = new SolutionModel();
-                solutionModels.Add(solution);
-
-                var currentNode = Graph.Nodes[solutionsAttempted];
-                solution.Nodes.Add(currentNode);
-
-                int discoveredNodes = 1;
-                while (true)
-                {
-                    var result = Go(solution, currentNode);
-                    if (result.node == null || result.edge == null)
-                    {
-                        solution.Solved = false;
-                        break;
-                    }
-                    solution.Edges.Add(result.edge);
-                    solution.Nodes.Add(result.node);
-
-                    currentNode = result.node;
-                    discoveredNodes++;
-                }
-
-                if (discoveredNodes != Graph.NodeCount)
-                {
-                    solution.Solved = false;
-                    solutionsAttempted++;
-                    continue;
-                }
-                solution.Solved = true;
-                break;
-            }
-            return solutionModels;
+            Solutions.Clear();
         }
 
         public void TrySolve()
         {
+            Clear();
+
             foreach (var graphNode in Graph.Nodes)
             {
+                Log($"STARTING AT {graphNode.Name}");
                 SolutionModel solutionModel = new SolutionModel();
 
-                Log($"Starting at Node: {graphNode.Name}");
+                var remainingNodes = Graph.Nodes.ToList();
 
-                var allNodes = Graph.Nodes.ToList();
-                allNodes.Remove(graphNode);
+                Do(graphNode, remainingNodes, solutionModel);
 
-                var currentNode = graphNode;
-                solutionModel.Nodes.Add(currentNode);
-
-                FindNeighbors(currentNode);
+                Solutions.Add(solutionModel);
             }
         }
 
@@ -148,52 +102,57 @@ namespace TravelingSalesPersonVisualizer
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        private void FindNeighbors(NodeModel currentNode)
+        private void Do(NodeModel currentNode, List<NodeModel> remainingNodes, SolutionModel solutionModel)
         {
-            foreach (var currentNodeEdge in currentNode.Edges)
+            if (!remainingNodes.Any())
             {
+                Log($"Solved - {solutionModel.Total}");
+                solutionModel.Solved = true;
+                return;
             }
-        }
 
-        private (NodeModel node, EdgeModel edge) Go(SolutionModel solutionModel, NodeModel currentNode)
-        {
-            Log($"Considering {currentNode.Name}");
+            if (currentNode == null)
+            {
+                Log($"Unsolved - {solutionModel.Total}");
+                solutionModel.Solved = false;
+                return;
+            }
 
             NodeModel closetNode = null;
             EdgeModel traversedEdge = null;
             double minWeightedDistance = double.MaxValue;
+
             foreach (var edge in currentNode.Edges)
             {
-                Log($"Considering {edge.Name}");
-
                 NodeModel otherNode = edge.Start == currentNode ? edge.End : edge.Start;
-                if (solutionModel.Nodes.Contains(otherNode))
-                {
-                    Log($"Node {otherNode.Name} already visited");
-                    continue;
-                }
 
-                if (solutionModel.Edges.Contains(edge))
+                if (!remainingNodes.Contains(otherNode))
                 {
-                    Log($"Edge {edge.Name} already traversed");
                     continue;
                 }
 
                 double distance = Math.Sqrt(Math.Pow(edge.End.X - edge.Start.X, 2) + Math.Pow(edge.End.Y - edge.Start.Y, 2));
                 double weightedDistance = distance * edge.Weight;
 
-                Log($"{distance.ToString("F2")} * {edge.Weight} = {weightedDistance.ToString("F2")}");
-
                 if (weightedDistance < minWeightedDistance)
                 {
-                    Log($"New minimum = Node: {otherNode.Name} Edge: {edge.Name}");
+                    //Log($"New minimum = Node: {otherNode.Name} Edge: {edge.Name}");
                     minWeightedDistance = weightedDistance;
                     closetNode = otherNode;
                     traversedEdge = edge;
                 }
             }
 
-            return (closetNode, traversedEdge);
+            remainingNodes.Remove(currentNode);
+
+            if (closetNode != null)
+            {
+                solutionModel.Nodes.Add(closetNode);
+                solutionModel.Edges.Add(traversedEdge);
+                solutionModel.Total += (decimal) minWeightedDistance;
+            }
+
+            Do(closetNode, remainingNodes, solutionModel);
         }
 
         private void Log(string text)

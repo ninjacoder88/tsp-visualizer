@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
 using System.Windows.Media;
 using System.Windows.Shapes;
 using TravelingSalesPersonVisualizer.Models;
@@ -23,8 +22,6 @@ namespace TravelingSalesPersonVisualizer
             ButtonUploadGraph.Click += ButtonUploadGraph_Click;
             ButtonSolve.Click += ButtonSolve_Click;
 
-            //IGraphBuilder graphBuilder = new UploadGraphBuilder(@"C:\temp\nodes.csv", @"C:\temp\edges.csv");
-            //IGraphBuilder graphBuilder = new RandomSingleEdgeBetweenNodeGraphBuilder();
             _viewModel = new ViewModel();
 
             EventLogGrid.ItemsSource = _viewModel.Logs;
@@ -38,79 +35,102 @@ namespace TravelingSalesPersonVisualizer
             EdgeLine = new Dictionary<EdgeModel, Line>();
         }
 
-        private void ButtonUploadGraph_Click(object sender, RoutedEventArgs e)
-        {
-            _viewModel.GenerateUploadedGraph();
-        }
-
         private Dictionary<EdgeModel, Line> EdgeLine { get; }
 
         private Dictionary<NodeModel, Ellipse> NodeEllipse { get; }
 
-        private Ellipse AddNode(int x, int y, Brush brush)
+        private Line AddEdge(EdgeModel graphEdge, Brush edgeBrush)
         {
-            Ellipse ellipse = new Ellipse {Width = 20, Height = 20, Fill = brush};
+            var line =
+                new Line
+                    {
+                        X1 = graphEdge.Start.X + 7.5,
+                        X2 = graphEdge.End.X + 7.5,
+                        Y1 = graphEdge.Start.Y + 7.5,
+                        Y2 = graphEdge.End.Y + 7.5,
+                        Stroke = edgeBrush,
+                        StrokeThickness = graphEdge.Weight,
+                        ToolTip = graphEdge.Name
+                    };
+            MainCanvas.Children.Add(line);
+            return line;
+        }
 
+        private Ellipse AddNode(string name, int x, int y, Brush nodeBrush, Brush textBrush, Brush textBackgroundBrush)
+        {
+            Ellipse ellipse = new Ellipse {Width = 20, Height = 20, Fill = nodeBrush, ToolTip = name};
             Canvas.SetLeft(ellipse, x);
             Canvas.SetTop(ellipse, y);
             MainCanvas.Children.Add(ellipse);
+
+            TextBlock textBlock = new TextBlock();
+            textBlock.Text = name;
+            textBlock.Foreground = textBrush;
+            textBlock.FontSize = 15;
+            textBlock.Background = textBackgroundBrush;
+            Canvas.SetLeft(textBlock, x+15);
+            Canvas.SetTop(textBlock, y+15);
+            MainCanvas.Children.Add(textBlock);
+
             return ellipse;
         }
 
         private void ButtonGenerateGraph_Click(object sender, RoutedEventArgs e)
         {
-            MainCanvas.Children.Clear();
-            NodeEllipse.Clear();
-            EdgeLine.Clear();
+            Clear();
 
-            _viewModel.GenerateRandomGraph((int) MainCanvas.ActualWidth, (int) MainCanvas.ActualHeight);
+            _viewModel.GenerateRandomGraph((int) MainCanvas.ActualWidth - 10, (int) MainCanvas.ActualHeight - 10);
 
-            Brush nodeBrush = (SolidColorBrush) new BrushConverter().ConvertFrom("#507EA5");
-            Brush edgeBrush = (SolidColorBrush) new BrushConverter().ConvertFrom("#B9BCBF");
-
-            SolidColorBrush brush = new SolidColorBrush(Color.FromRgb(255, 255, 255));
-
-            foreach (var graphEdge in _viewModel.Graph.Edges)
-            {
-                var line = new Line
-                               {
-                                   X1 = graphEdge.Start.X + 7.5,
-                                   X2 = graphEdge.End.X + 7.5,
-                                   Y1 = graphEdge.Start.Y + 7.5,
-                                   Y2 = graphEdge.End.Y + 7.5,
-                                   Stroke = edgeBrush,
-                                   StrokeThickness = graphEdge.Weight
-                               };
-                EdgeLine.Add(graphEdge, line);
-                MainCanvas.Children.Add(line);
-            }
-
-            foreach (var graphNode in _viewModel.Graph.Nodes)
-            {
-                var ellipse = AddNode(graphNode.X, graphNode.Y, nodeBrush);
-                NodeEllipse.Add(graphNode, ellipse);
-
-                TextBlock textBlock = new TextBlock();
-                textBlock.Text = graphNode.Name;
-                textBlock.Foreground = brush;
-                textBlock.FontSize = 15;
-                textBlock.ToolTip = graphNode.Name;
-                Canvas.SetLeft(textBlock, graphNode.X + 5);
-                Canvas.SetTop(textBlock, graphNode.Y - 2.5 );
-                MainCanvas.Children.Add(textBlock);
-            }
+            DrawIt();
         }
 
         private void ButtonSolve_Click(object sender, RoutedEventArgs e)
         {
-            var solutionModels = _viewModel.SolveGrapsh();
-            var lastSolution = solutionModels.Last();
+            _viewModel.TrySolve();
+            var bestSolution = _viewModel.Solutions.OrderBy(x => x.Total).First();
 
             Brush traversedEdgeBrush = new SolidColorBrush(Color.FromRgb(0, 255, 0));
 
-            foreach (var lastSolutionEdge in lastSolution.Edges)
+            foreach (var lastSolutionEdge in bestSolution.Edges)
             {
                 EdgeLine[lastSolutionEdge].Stroke = traversedEdgeBrush;
+            }
+        }
+
+        private void ButtonUploadGraph_Click(object sender, RoutedEventArgs e)
+        {
+            Clear();
+
+            _viewModel.GenerateUploadedGraph();
+
+            DrawIt();
+        }
+
+        private void Clear()
+        {
+            MainCanvas.Children.Clear();
+            NodeEllipse.Clear();
+            EdgeLine.Clear();
+        }
+
+        private void DrawIt()
+        {
+            Brush nodeBrush = (SolidColorBrush) new BrushConverter().ConvertFrom("#507EA5");
+            Brush edgeBrush = (SolidColorBrush) new BrushConverter().ConvertFrom("#B9BCBF");
+
+            SolidColorBrush textBrush = new SolidColorBrush(Color.FromRgb(255, 255, 255));
+            SolidColorBrush textBackgroundBrush = (SolidColorBrush)new BrushConverter().ConvertFrom("#97B7D2");
+
+            foreach (var graphEdge in _viewModel.Graph.Edges)
+            {
+                var line = AddEdge(graphEdge, edgeBrush);
+                EdgeLine.Add(graphEdge, line);
+            }
+
+            foreach (var graphNode in _viewModel.Graph.Nodes)
+            {
+                var ellipse = AddNode(graphNode.Name, graphNode.X, graphNode.Y, nodeBrush, textBrush, textBackgroundBrush);
+                NodeEllipse.Add(graphNode, ellipse);
             }
         }
 

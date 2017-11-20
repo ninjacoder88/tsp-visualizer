@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace TravelingSalesPersonVisualizer.Models
 {
@@ -15,5 +16,7 @@ namespace TravelingSalesPersonVisualizer.Models
         public IList<NodeModel> Nodes { get; }
 
         public bool Solved { get; set; }
+
+        public decimal Total { get; set; }
     }
 }
